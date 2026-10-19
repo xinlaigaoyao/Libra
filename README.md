@@ -1,104 +1,159 @@
-# LIBRA · 校园图书馆出纳自动化管理系统
+# LIBRA · 校园图书馆出纳管理系统
 
-**信息系统分析与设计课程项目 · 肖沁峰组**
+“信息系统分析与设计”课程项目，肖沁峰组。
 
-按第 7 周规划 PPT 的业务范围实现，并提升交互与数据一致性。技术为 **原生 HTML / CSS / JavaScript + Flask + MySQL**。没有 React、Vue、Node 后端或 SQLite 替代数据库。Node 仅用于浏览器端到端测试，运行应用无需 Node。
+出纳员用它办理借书、还书、续借和罚款登记；读者不用登录就能查书。功能范围按第 7 周规划 PPT 定。
 
-## 在这台电脑直接打开
+技术栈：原生 HTML / CSS / JavaScript + Flask + MySQL。运行应用不需要 Node，Node 只用来跑浏览器测试。
 
-1. 双击本目录 `start.cmd`，等待出现 `http://127.0.0.1:4317`。
-2. 浏览器打开 <http://127.0.0.1:4317>。
-3. 出纳员账号 **admin**，演示密码 **Library@2026**。
-4. 访客检索入口：<http://127.0.0.1:4317/#catalog>。
+![LIBRA 工作台预览](artifacts/preview-dashboard.png)
 
-已配好项目独立的 Python 虚拟环境与 MySQL 便携运行环境。MySQL 仅绑定本机 `127.0.0.1:3307`，不注册系统服务。网页使用 `4317` 端口。`start.cmd` 前台运行网页服务，窗口关闭后网页停止；数据库进程保持运行，可用 `stop.cmd` 正常关闭。为兼容 MySQL 的中文路径解析，启动器在 `%LOCALAPPDATA%/LIBRA-Campus` 建立指向本项目 `.runtime` 的目录联接，数据实际仍留在项目内。移动项目后需要重新建立该联接；不要直接递归删除联接中的文件。
+## 快速开始（Windows）
 
-所有示例读者均为虚构。书目元数据是课程演示样例，封面为本项目的文字版设计，不代表出版社真实封面。首页的三本装饰性“书”是界面视觉元素，不是馆藏数据。
+需要：Windows 10/11、Python 3.12 及以上、Microsoft Visual C++ 运行库（MySQL 依赖它）。
 
-## 已实现的业务
+1. 建虚拟环境并安装依赖：
 
-| PPT 模块 | 实际功能 |
-|---|---|
-| 登录与权限 | 密码哈希、出纳员会话、公开检索、私有接口权限、CSRF 校验 |
-| 图书信息管理 | 新书录入、编辑、批量 CSV 导入、每册唯一藏书号、副本维护 / 下架 / 上架 |
-| 读者信息管理 | 新增 / 编辑、学生 / 教师、自定义上限与借期、证件停用 |
-| 图书检索 | 书名部分匹配、作者、ISBN、藏书号、分类与状态过滤、卡片 / 列表 |
-| 借书与还书 | 原子借出、自动应还日、去向追踪、一次续借、归还、扫码枪键盘输入、可打印凭证 |
-| 逾期与违规 | 自然日逾期、整数分计价、污损 / 撕毁 / 遗失、罚款流水、线下缴清、排行、CSV 导出 |
-| 管理支持 | 仪表盘、近七日趋势、馆藏分类、热门借阅、当前在借率、操作日志、手机布局 |
+   ```powershell
+   python -m venv .venv
+   .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+   ```
 
-业务规则详见 [设计与验收](docs/设计与验收.md)。数据模型、用例、DFD、类图和时序图详见 [系统分析与设计](docs/系统分析与设计.md)。
+2. 从 [MySQL 官方归档](https://downloads.mysql.com/archives/community/) 下载 8.4.x 的 Windows ZIP 包（我们用的是 8.4.6），把里面的 `mysql-8.4.x-winx64` 文件夹解压到项目的 `.runtime/` 目录下。
+3. 双击 `start.cmd`，看到 `http://127.0.0.1:4317` 就说明启动好了。
+4. 浏览器打开 <http://127.0.0.1:4317>，用演示账号登录：用户名 `admin`，密码 `Library@2026`。
 
-## 五分钟演示顺序
+不登录也能访问检索页：<http://127.0.0.1:4317/#catalog>。
 
-1. 免登录进入馆藏，搜索“三体”，查看每册藏书号与位置。
-2. 用演示账号登录，展示首页实时指标、流通趋势和归还提醒。
-3. 进入借还工作台，用 `20260001` 借 `LIB-001-02`，展示应还日期与打印凭证。
-4. 进入借阅记录，按藏书号检索并续借，展示日期延长和续借次数。
-5. 办理归还。选择“污损”观察费用，再提交生成罚款和维护状态。
-6. 在罚款页登记线下缴清，在馆藏页将维护副本恢复在库。
-7. 展示统计报表和操作日志，说明业务操作、馆藏状态和审计在同一事务内保存。
+第一次启动时，`start.cmd` 会自动：
 
-初始数据有 16 种书目、40 册实体副本、12 位读者、11 笔在借和 28 笔已归还记录。以首次初始化日期生成到期日，之后数据按真实时间推进，不会每次启动重置。示例 `LIB-002-02`、`LIB-004-02` 初始存在逾期，便于演示。演示数据被修改后，按页面实际状态选择可借副本；不要为了演示直接改生产数据库。
+- 初始化数据库，只监听本机 `127.0.0.1:3307`，不安装成系统服务；
+- 随机生成数据库密码，存在 `.runtime/local.json`；
+- 建表并写入演示数据。
 
-## 在另一台电脑部署
+以后再启动，数据都还在，不会重置。
 
-推荐 Python 3.12+，MySQL 8.4，Windows 10/11。项目中的数据库环境是 [MySQL 官方 Windows ZIP 包](https://dev.mysql.com/doc/refman/8.4/en/windows-installation.html)，当前课程演示使用 8.4.6；面向真实生产部署时应独立规划版本与维护。
+## 日常使用
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
+| 操作 | 方法 |
+| --- | --- |
+| 启动 | 双击 `start.cmd` |
+| 停网页服务 | 关掉 `start.cmd` 的窗口 |
+| 停数据库 | 双击 `stop.cmd`。只关窗口的话，数据库会继续在后台运行 |
 
-从 [MySQL 官方归档](https://downloads.mysql.com/archives/community/) 下载 Windows ZIP，将 `mysql-8.4.x-winx64` 文件夹解压到 `.runtime/` 下，然后运行 `start.cmd`。该启动器会创建仅在本机监听的数据库、随机数据库凭据以及应用专用账号。MySQL 需要 Microsoft Visual C++ 运行库。
+## 演示数据
 
-如果使用已有 MySQL，可设置 `DB_HOST`、`DB_PORT`、`DB_USER`、`DB_PASSWORD`、`DB_NAME`、`SECRET_KEY`，准备好 UTF-8 数据库后运行：
+- 16 种书，共 40 册，每册有一个唯一的藏书号，例如 `LIB-001-02`
+- 12 位读者，读者证号从 `20260001` 到 `20260012`
+- 11 条借出中的记录、28 条已归还的记录
+- `LIB-002-02` 和 `LIB-004-02` 一开始就是逾期状态，方便演示罚款
 
-```powershell
-.\.venv\Scripts\python.exe -c "from app import app,initialize; from waitress import serve; initialize(); serve(app,host='127.0.0.1',port=4317,threads=8)"
-```
+到期日从第一次初始化那天开始算，之后随真实日期推进。
 
-不要把 `.runtime/local.json`、数据库目录或 `.venv` 提交到 Git。数据库凭据在首次启动时随机生成；演示用网页账号密码单独固定，交给真实用户使用前应修改。
+读者都是虚构的，书目信息只是样例。封面是我们自己做的文字封面，不是出版社的封面。首页那三本装饰用的“书”只是界面元素，不算馆藏。
 
-## 可重复验证
+## 五分钟演示
+
+1. 不登录，进入馆藏页搜“三体”，可以看到每一册的藏书号和位置。
+2. 登录，首页有实时数据、近七天借还趋势和快到期提醒。
+3. 进入借还工作台，用读者证 `20260001` 借 `LIB-001-02`，页面会显示应还日期，凭证可以打印。
+4. 进入借阅记录，按藏书号找到这条记录并续借，应还日期会延长，续借次数加 1。
+5. 办理归还，选“污损”，页面会先显示要交多少钱，提交后生成罚款，这本书转为“维护”状态。
+6. 到罚款页登记“已线下缴清”；再到馆藏页把这本书改回“在库”。
+7. 打开统计报表和操作日志。每笔业务和它的日志是一起保存的，不会出现只保存一半的情况。
+
+演示过几次之后，数据会和上面不一样。按页面上实际可借的书来选就行。
+
+## 功能
+
+| PPT 模块 | 实现的功能 |
+| --- | --- |
+| 登录与权限 | 出纳员登录。读者不登录只能查书，看不到读者资料 |
+| 图书管理 | 新书入库、编辑、CSV 批量导入、下架 / 维护 / 恢复在库 |
+| 读者管理 | 新增和编辑读者，分学生和教师，可以单独设借书上限和借期，可以停用读者证 |
+| 图书检索 | 按书名、作者、ISBN、藏书号搜索，按分类和状态筛选，卡片或列表显示 |
+| 借书与还书 | 借书、还书、续借一次。可以查一本书现在在谁手里。支持扫码枪（当作键盘输入），凭证可打印 |
+| 逾期与违规 | 逾期罚款，污损、撕毁、遗失赔偿，线下缴款登记，逾期排行，CSV 导出 |
+| 统计 | 首页数据看板、近七天趋势、分类统计、热门图书、操作日志，手机上也能用 |
+
+借书规则（借几本、借多久、怎么罚款）见 [设计与验收](docs/设计与验收.md)。用例图、数据流图、ER 图、时序图见 [系统分析与设计](docs/系统分析与设计.md)。
+
+## 测试
+
+前提：已经按“快速开始”启动过一次，并且项目自带的 MySQL 正在运行（`start.cmd` 启动后数据库会一直在后台，除非运行了 `stop.cmd`）。
 
 ```powershell
 npm install
-npm run check
-npm run test:e2e
+npm run check      # 检查 static/app.js 的语法
+npm run test:e2e   # 用真实浏览器跑完整业务流程
 ```
 
-测试默认使用已安装的 Microsoft Edge；支持通过 `BROWSER_CHANNEL=chrome` 指定 Chrome。`tests/serve.py` 仅重建 **campus_library_e2e** 测试数据库，在端口 `4318` 运行真实 Flask 服务，不修改展示用的 **campus_library**。
+- 测试默认用 Microsoft Edge。想用 Chrome，先设置环境变量 `BROWSER_CHANNEL=chrome`。
+- 测试会清空并重建一个单独的数据库 `campus_library_e2e`，在 `4318` 端口另起一个服务。演示用的数据库 `campus_library` 不受影响。
+- 遇到第一个失败的场景就停止。
 
-测试通过浏览器与 HTTP 覆盖公开检索、鉴权、登录错误、CSRF、入库编辑、读者管理、借出续借、归还损坏、缴款、并发冲突、上限、到期日边界、CSV 回滚与导出、移动端和退出登录。结果保存在：
+测试覆盖 13 组场景：公开检索和权限、登录、入库和编辑、读者管理、借书、续借、损坏归还和缴款、两人同时借同一本书、同时借超上限、到期当天和逾期一天的计费、输入校验和导入回滚、CSV 导入导出、手机布局和退出登录。
 
-- `artifacts/e2e-results.json`：每项结果、时间与失败详情。
-- `artifacts/01-dashboard.png` 等：实际浏览器页面截图。
-- `artifacts/e2e-trace.zip`：可用 `npx playwright show-trace artifacts/e2e-trace.zip` 回放。
-- `artifacts/loans-export.csv`：测试中从界面下载的真实导出文件。
+测试结果在 `artifacts/` 下：
 
-手动验收：刷新后借阅仍存在；两窗口借同一册只能一个成功；欠款和停用读者不能新借；借出副本不能直接下架；重复归还和重复缴款被拒绝；未登录无法查看读者档案；手机宽度下可展开侧栏、检索和完成表单。
+| 文件 | 内容 |
+| --- | --- |
+| `e2e-results.json` | 每个场景的结果、耗时和失败原因 |
+| `01-dashboard.png` 等 | 测试时截的页面 |
+| `loans-export.csv` | 测试时从页面导出的借阅明细 |
+| `e2e-trace.zip` | 浏览器操作录像，用 `npx playwright show-trace artifacts/e2e-trace.zip` 回放。里面有测试登录信息，所以不提交到仓库，跑完测试后在本地生成 |
+
+`python scripts/package_delivery.py` 会根据测试结果生成 `artifacts/验收报告.html`，并在项目的上一级目录打一个不含运行环境和密码的源码压缩包。
+
+## 用自己的 MySQL
+
+不想用项目自带的 MySQL，可以连自己的 MySQL 8.x：
+
+1. 建一个 utf8mb4 编码的空数据库，以及一个对它有建表权限的账号。
+2. 设置环境变量 `DB_HOST`、`DB_PORT`、`DB_USER`、`DB_PASSWORD`、`DB_NAME`，再设一个随机的 `SECRET_KEY`（用来签名登录会话）。
+3. 运行：
+
+   ```powershell
+   .\.venv\Scripts\python.exe -c "from app import app,initialize; from waitress import serve; initialize(); serve(app,host='127.0.0.1',port=4317,threads=8)"
+   ```
+
+这种方式不能用 `start.cmd`，因为它会去启动自带的 MySQL。E2E 测试也只支持自带的 MySQL。
 
 ## 项目结构
 
 ```text
-app.py                   Flask 路由、业务校验、事务、统计和导出
-schema.sql               MySQL 表、索引、外键及约束
-seed.py                  首次初始化的课程演示数据
-run.py / start.cmd       本机启动入口
-scripts/setup.py         独立 MySQL 环境启动与初始化
-static/index.html        页面入口
-static/style.css         设计系统与响应式布局
-static/app.js            原生 JavaScript 页面和交互
-docs/                    分析设计、接口和验收文档
-tests/                   真实浏览器与 MySQL 的 E2E
-artifacts/               可复查的测试报告和截图
+app.py                   后端：接口、业务规则、统计、导出
+schema.sql               数据库表结构
+seed.py                  首次启动时写入的演示数据
+run.py / start.cmd       启动入口
+stop.cmd                 停止数据库
+scripts/setup.py         启动并初始化项目自带的 MySQL
+scripts/package_delivery.py  生成验收报告和源码压缩包
+scripts/capture.cjs      从正在运行的 4317 服务截取 README 预览图（preview-*.png）
+static/                  前端页面（index.html、style.css、app.js）
+docs/                    设计文档
+tests/                   浏览器端到端测试
+artifacts/               测试结果和截图
 ```
 
-本项目为本地课程交付版。没有接学校统一身份认证、真实读者数据、硬件扫码 SDK 或在线支付。扫码枪采用通用键盘输入模式，缴款是线下收款登记；打印通过浏览器打印对话框完成。外网部署、HTTPS、账号生命周期、备份策略与监控属于正式运维工作。
+## 限制
 
-## GitHub 仓库说明
+这是在本机运行的课程演示版：
 
-仓库包含源码、设计文档、验收结果和截图，不包含本机 Python 环境、MySQL 程序、数据库文件或随机生成的数据库密码。克隆后请按“在另一台电脑部署”配置环境。浏览器 Trace 含测试会话信息，不随仓库发布；运行 E2E 后可在本机生成。
+- 没有接学校统一登录，也没有真实读者数据。
+- 扫码枪按普通键盘输入处理，没有接硬件 SDK。
+- 不能在线支付，“缴款”只是登记线下已收款。
+- 打印用浏览器自带的打印。
+- 只有一个出纳员账号，没有账号管理功能。演示密码是写死的，给别人真用之前要改。
+- 没有做 HTTPS、登录频率限制、备份和监控，不能直接放到公网上用。
 
-![LIBRA 工作台预览](artifacts/preview-dashboard.png)
+### 启动器的一个特殊处理
+
+MySQL 在 Windows 上处理中文路径会出错。所以 `start.cmd` 会在 `%LOCALAPPDATA%\LIBRA-Campus` 建一个指向项目 `.runtime` 目录的链接（目录联接），实际数据仍在项目里。
+
+- 把项目移到别的位置后，要先删掉这个链接再启动，否则启动会报错。
+- 删这个链接时，只能删链接本身，比如用 `rmdir`。不要用“删除文件夹及其内容”的方式删，那样会把项目里的数据库一起删掉。
+
+## 仓库里没有的东西
+
+`.venv`、`.runtime`（MySQL 程序、数据库文件、`local.json` 里的随机密码）和 `e2e-trace.zip` 都不提交到仓库。克隆下来后按“快速开始”配置即可。
