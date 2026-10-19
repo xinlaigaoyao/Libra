@@ -1,0 +1,13 @@
+{
+  "name": "libra-campus-library",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Browser E2E tooling only. The application uses Flask and plain HTML/CSS/JavaScript.",
+  "scripts": {
+    "test:e2e": "node tests/e2e.cjs",
+    "check": "node --check static/app.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.58.2"
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "started": "2026-10-19T06:49:39.546Z",
+  "database": "campus_library_e2e",
+  "checks": [
+    {
+      "name": "Public catalog works and private data is protected",
+      "status": "passed",
+      "ms": 779
+    },
+    {
+      "name": "Login rejects wrong password, then authenticates through UI",
+      "status": "passed",
+      "ms": 2094
+    },
+    {
+      "name": "Catalog grid, filters, details and book creation/edit work",
+      "status": "passed",
+      "ms": 1205
+    },
+    {
+      "name": "Reader create and edit through UI",
+      "status": "passed",
+      "ms": 708
+    },
+    {
+      "name": "Borrow through UI produces persistent receipt and blocks duplicate/limit",
+      "status": "passed",
+      "ms": 757
+    },
+    {
+      "name": "Renew once through UI; second renewal rejected",
+      "status": "passed",
+      "ms": 285
+    },
+    {
+      "name": "Return damaged book through UI; fines, maintenance and payment persist",
+      "status": "passed",
+      "ms": 866
+    },
+    {
+      "name": "Concurrent requests cannot double-borrow a copy",
+      "status": "passed",
+      "ms": 58
+    },
+    {
+      "name": "Concurrent requests cannot exceed reader loan limit",
+      "status": "passed",
+      "ms": 66
+    },
+    {
+      "name": "Due-today costs zero; yesterday costs exactly 50 cents",
+      "status": "passed",
+      "ms": 161
+    },
+    {
+      "name": "Validation, availability and import rollback enforced by backend",
+      "status": "passed",
+      "ms": 425
+    },
+    {
+      "name": "CSV import UI, export, search empty state and reports work",
+      "status": "passed",
+      "ms": 1257
+    },
+    {
+      "name": "Mobile navigation, responsive layout and logout protection",
+      "status": "passed",
+      "ms": 401
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "01-dashboard.png",
+    "02-catalog.png",
+    "03-borrow-receipt.png",
+    "04-reports.png",
+    "05-mobile.png"
+  ],
+  "status": "passed",
+  "finished": "2026-10-19T06:49:52.299Z"
+}

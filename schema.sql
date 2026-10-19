@@ -1,0 +1,43 @@
+CREATE TABLE IF NOT EXISTS staff (
+ id INT PRIMARY KEY AUTO_INCREMENT, username VARCHAR(50) NOT NULL UNIQUE,
+ name VARCHAR(50) NOT NULL, password_hash VARCHAR(255) NOT NULL
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS books (
+ id INT PRIMARY KEY AUTO_INCREMENT, isbn VARCHAR(30) NOT NULL UNIQUE,
+ title VARCHAR(150) NOT NULL, author VARCHAR(100) NOT NULL, category VARCHAR(30) NOT NULL,
+ publisher VARCHAR(100) NOT NULL DEFAULT '', price_cents INT NOT NULL DEFAULT 5000,
+ color VARCHAR(20) NOT NULL DEFAULT '#35584b', created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS copies (
+ id INT PRIMARY KEY AUTO_INCREMENT, book_id INT NOT NULL, accession VARCHAR(40) NOT NULL UNIQUE,
+ location VARCHAR(80) NOT NULL, status ENUM('available','borrowed','maintenance','withdrawn') NOT NULL DEFAULT 'available',
+ FOREIGN KEY (book_id) REFERENCES books(id), INDEX (book_id, status)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS readers (
+ id INT PRIMARY KEY AUTO_INCREMENT, card VARCHAR(40) NOT NULL UNIQUE,
+ name VARCHAR(50) NOT NULL, department VARCHAR(100) NOT NULL, kind ENUM('student','teacher') NOT NULL DEFAULT 'student',
+ max_loans INT NOT NULL DEFAULT 5, loan_days INT NOT NULL DEFAULT 30,
+ active BOOLEAN NOT NULL DEFAULT TRUE, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ CHECK (max_loans BETWEEN 1 AND 30), CHECK (loan_days BETWEEN 1 AND 180)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS loans (
+ id INT PRIMARY KEY AUTO_INCREMENT, reader_id INT NOT NULL, copy_id INT NOT NULL,
+ borrowed_at DATETIME NOT NULL, due_date DATE NOT NULL, returned_at DATETIME NULL,
+ renewals INT NOT NULL DEFAULT 0, condition_note VARCHAR(255) NOT NULL DEFAULT '',
+ active_copy_id INT GENERATED ALWAYS AS (IF(returned_at IS NULL, copy_id, NULL)) STORED,
+ UNIQUE KEY one_active_loan(active_copy_id),
+ FOREIGN KEY (reader_id) REFERENCES readers(id), FOREIGN KEY (copy_id) REFERENCES copies(id),
+ INDEX (reader_id, returned_at), INDEX (due_date)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS fines (
+ id INT PRIMARY KEY AUTO_INCREMENT, loan_id INT NOT NULL, reader_id INT NOT NULL,
+ kind ENUM('overdue','damage') NOT NULL, amount_cents INT NOT NULL,
+ note VARCHAR(255) NOT NULL, created_at DATETIME NOT NULL, paid_at DATETIME NULL,
+ FOREIGN KEY (loan_id) REFERENCES loans(id), FOREIGN KEY (reader_id) REFERENCES readers(id),
+ UNIQUE KEY one_charge(loan_id, kind), CHECK (amount_cents > 0)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS audit_logs (
+ id INT PRIMARY KEY AUTO_INCREMENT, staff_id INT NOT NULL, action VARCHAR(50) NOT NULL,
+ target VARCHAR(100) NOT NULL, detail VARCHAR(500) NOT NULL, created_at DATETIME NOT NULL,
+ FOREIGN KEY (staff_id) REFERENCES staff(id)
+) ENGINE=InnoDB;
